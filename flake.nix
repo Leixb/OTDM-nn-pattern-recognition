@@ -15,6 +15,7 @@
           wmctrl
           which
           python39Packages.pygments
+          octaveFull
         ];
 
         texlive = pkgs.texlive.combined.scheme-full;
