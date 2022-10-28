@@ -45,6 +45,35 @@ function [Xtr,ytr,wo,fo,tr_acc,Xte,yte,te_acc,niter,tex]=uo_nn_solve(num_target,
 %    tex : total running time (see "tic" "toc" Matlab commands).
 %
 
+% Train and Test sets:
+[Xtr, ytr] = uo_nn_dataset(tr_seed, tr_p, num_target, tr_freq);
+[Xte, yte] = uo_nn_dataset(te_seed, te_q, num_target, tr_freq);
+
+% sigmoid function:
+sig = @(Xtr)          1./(1+exp(-Xtr));
+y   = @(Xtr, w)       sig(w'*sig(Xtr));
+% Loss function:
+L   = @(w, Xtr, ytr) (norm(y(Xtr,w)-ytr)^2)/size(ytr,2)+ (la*norm(w)^2)/2;
+% Gradient of the loss function:
+gL  = @(w, Xtr, ytr) (2*sig(Xtr)*((y(Xtr, w) - ytr).*y(Xtr, w).*(1-y(Xtr, w)))')/size(ytr,2) + la*w;
+
+tic;
+
+if isd == 1
+    % Gradient Method (GM):
+    [wo, fo, niter] = uo_nn_GM(gL, Xtr, ytr, epsG, kmax);
+elseif isd == 2
+    % Quasi-Newton Method (QNM):
+    [wo, fo, niter] = uo_nn_QNM(gL, Xtr, ytr, epsG, kmax);
+elseif isd == 3
+    % Stochastic Gradient Method (SGM):
+    [wo, fo, niter] = uo_nn_SGM(gL, Xtr, ytr, epsG, kmax, sg_al0, sg_be, sg_ga, sg_emax, sg_ebest, sg_seed);
+else
+    error('Error: isd must be 1, 2 or 3');
+end
+
+tex = toc;
+
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % End Procedure uo_nn_solve
