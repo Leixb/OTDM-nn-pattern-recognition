@@ -57,11 +57,16 @@ L   = @(w, Xtr, ytr) (norm(y(Xtr,w)-ytr)^2)/size(ytr,2)+ (la*norm(w)^2)/2;
 % Gradient of the loss function:
 gL  = @(w, Xtr, ytr) (2*sig(Xtr)*((y(Xtr, w) - ytr).*y(Xtr, w).*(1-y(Xtr, w)))')/size(ytr,2) + la*w;
 
+x = zeros(size(Xtr,1),1);
+
+Lx = @(x) L(x,Xtr,ytr);
+gLx = @(x) gL(x,Xtr,ytr);
+
 tic;
 
 if isd == 1
     % Gradient Method (GM):
-    [wo, fo, niter] = uo_nn_GM(gL, Xtr, ytr, epsG, kmax);
+    [wo, niter] = uo_nn_GM(x, Lx, gLx, epsG, kmax, ils, ialmax, kmaxBLS, epsal, c1, c2)
 elseif isd == 2
     % Quasi-Newton Method (QNM):
     [wo, fo, niter] = uo_nn_QNM(gL, Xtr, ytr, epsG, kmax);
@@ -73,6 +78,15 @@ else
 end
 
 tex = toc;
+
+fo = L(wo,Xtr,ytr);
+
+% Accuracy:
+y_fit_tr = y(Xtr, wo);
+y_fit_te = y(Xte, wo);
+
+tr_acc = sum(round(y_fit_tr) == ytr)/size(ytr,2);
+te_acc = sum(round(y_fit_te) == yte)/size(yte,2);
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
