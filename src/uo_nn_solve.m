@@ -47,7 +47,7 @@ function [Xtr,ytr,wo,fo,tr_acc,Xte,yte,te_acc,niter,tex]=uo_nn_solve(num_target,
 
 % Train and Test sets:
 [Xtr, ytr] = uo_nn_dataset(tr_seed, tr_p, num_target, tr_freq);
-[Xte, yte] = uo_nn_dataset(te_seed, te_q, num_target, tr_freq);
+[Xte, yte] = uo_nn_dataset(te_seed, te_q, num_target, 0.0);
 
 % sigmoid function:
 sig = @(X)          1./(1+exp(-X));
@@ -69,14 +69,14 @@ tic;
 if isd == 1
     % Gradient Method (GM):
     [wo, niter] = uo_nn_GM(wi, Ltr, gLtr, hL, epsG, kmax, ils, ialmax, kmaxBLS, epsal, c1, c2)
-elseif isd == 2
+elseif isd == 3
     % Quasi-Newton Method (QNM):
     [wo, niter] = uo_nn_QNM(wi, Ltr, gLtr, epsG, kmax, ils, ialmax, kmaxBLS, epsal, c1, c2)
-elseif isd == 3
+elseif isd == 7
     % Stochastic Gradient Method (SGM):
     [wo, niter] = uo_nn_SGM(wi, L, gL, Xtr, ytr, Xte, yte, sg_al0, sg_be, sg_ga, sg_emax, sg_ebest, sg_seed)
 else
-    error('Error: isd must be 1, 2 or 3');
+    error('Error: isd must be 1 (GM), 3 (QNM) or 7 (SGM)');
 end
 
 tex = toc;

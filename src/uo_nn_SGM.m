@@ -20,8 +20,7 @@ function [wo, k] = uo_nn_SGM(w, L, gL, Xtr, ytr, Xte, yte, sg_al0, sg_be, sg_ga,
 % returns:
 %
 % wo: optimal weights
-% fo: optimal function value
-% niter: number of iterations
+% k: number of iterations
 
 % set random seed
 rng(sg_seed);
@@ -51,7 +50,7 @@ while e <= sg_emax && s < sg_ebest
         y = ytr(:, S)';
 
         % direction
-        d = -gL(w, X, y);
+        d = mean(-gL(w, X, y), 2);
 
         if k <= k_sg
             a = (1 - k/k_sg) * sg_al0 + k/k_sg * a_sg;
@@ -68,7 +67,9 @@ while e <= sg_emax && s < sg_ebest
 
     if lte < lte_best
         lte_best = lte;
+        % avg of each row in w
         wo = w;
+
         s = 0; % Break out of the loop
     else
         s = s + 1;
