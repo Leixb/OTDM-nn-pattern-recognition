@@ -50,14 +50,17 @@ function [Xtr,ytr,wo,fo,tr_acc,Xte,yte,te_acc,niter,tex]=uo_nn_solve(num_target,
 [Xte, yte] = uo_nn_dataset(te_seed, te_q, num_target, tr_freq);
 
 % sigmoid function:
-sig = @(Xtr)          1./(1+exp(-Xtr));
-y   = @(Xtr, w)       sig(w'*sig(Xtr));
+sig = @(X)          1./(1+exp(-X));
+y   = @(X, w)       sig(w'*sig(X));
 % Loss function:
-L   = @(w) (norm(y(Xtr,w)-ytr)^2)/size(ytr,2)+ (la*norm(w)^2)/2;
+L   = @(w, Xtr, ytr) (norm(y(Xtr,w)-ytr)^2)/size(ytr,2)+ (la*norm(w)^2)/2;
 % Gradient of the loss function:
-gL  = @(w) (2*sig(Xtr)*((y(Xtr, w) - ytr).*y(Xtr, w).*(1-y(Xtr, w)))')/size(ytr,2) + la*w;
+gL  = @(w, Xtr, ytr) (2*sig(Xtr)*((y(Xtr, w) - ytr).*y(Xtr, w).*(1-y(Xtr, w)))')/size(ytr,2) + la*w;
 % Hessian of the loss function
 hL = @(w) w*eye(size(w,1));
+
+Ltr = @(w) L(w, Xtr, ytr);
+gLtr = @(w) gL(w, Xtr, ytr);
 
 wi = zeros(size(Xtr,1),1);
 
@@ -65,20 +68,20 @@ tic;
 
 if isd == 1
     % Gradient Method (GM):
-    [wo, niter] = uo_nn_GM(wi, L, gL, hL, epsG, kmax, ils, ialmax, kmaxBLS, epsal, c1, c2)
+    [wo, niter] = uo_nn_GM(wi, Ltr, gLtr, hL, epsG, kmax, ils, ialmax, kmaxBLS, epsal, c1, c2)
 elseif isd == 2
     % Quasi-Newton Method (QNM):
-    [wo, niter] = uo_nn_QNM(wi, L, gL, epsG, kmax, ils, ialmax, kmaxBLS, epsal, c1, c2)
+    [wo, niter] = uo_nn_QNM(wi, Ltr, gLtr, epsG, kmax, ils, ialmax, kmaxBLS, epsal, c1, c2)
 elseif isd == 3
     % Stochastic Gradient Method (SGM):
-    [wo, fo, niter] = uo_nn_SGM(gL, Xtr, ytr, epsG, kmax, sg_al0, sg_be, sg_ga, sg_emax, sg_ebest, sg_seed);
+    [wo, niter] = uo_nn_SGM(wi, L, gL, Xtr, ytr, Xte, yte, sg_al0, sg_be, sg_ga, sg_emax, sg_ebest, sg_seed)
 else
     error('Error: isd must be 1, 2 or 3');
 end
 
 tex = toc;
 
-fo = L(wo);
+fo = Ltr(wo);
 
 % Accuracy:
 y_fit_tr = y(Xtr, wo);

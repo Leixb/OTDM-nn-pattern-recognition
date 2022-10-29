@@ -21,8 +21,8 @@ sg_emax = kmax; sg_ebest = floor(0.01*sg_emax);               % SGM stopping con
 % Optimization
 %
 
-ils = 2;
-isd = 2;
+ils = 3;
+isd = 3;
 ialmax = 2;
 
 t1=clock;
