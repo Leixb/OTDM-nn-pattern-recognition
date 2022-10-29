@@ -1,10 +1,11 @@
-function [x, k] = uo_nn_GM(x, f, g, epsG, kmax, ils, ialmax, kmaxBLS, epsal, c1, c2)
+function [x, k] = uo_nn_GM(x, f, g, h, epsG, kmax, ils, ialmax, kmaxBLS, epsal, c1, c2)
 %
 % Input parameters:
 %
 % x : initial point.
 % f : function to be minimized.
 % g : gradient of the function to be minimized.
+% h : Hessian of the function to be minimized.
 % epsG : optimality tolerance.
 % kmax : maximum number of iterations.
 % ils : line search (1 if exact, 2 if uo_BLS, 3 if uo_BLSNW32)
@@ -18,13 +19,9 @@ function [x, k] = uo_nn_GM(x, f, g, epsG, kmax, ils, ialmax, kmaxBLS, epsal, c1,
 
 % Initialization:
     k = 0;
-    almin = 1e-10;
+    almin = 1e-5;
     rho = 0.5;
-    iW = 2; % Strong Wolfe condition
-
-    gd_prev = 1;
-    fx_prev = 1;
-    a = 1;
+    iW = 1; % Wolfe condition
 
     while (norm(g(x)) > epsG) && (k < kmax)
         % direction
@@ -33,18 +30,20 @@ function [x, k] = uo_nn_GM(x, f, g, epsG, kmax, ils, ialmax, kmaxBLS, epsal, c1,
         gd = g(x)'*d;
         fx = f(x);
 
-        if ialmax == 1
+        if k == 0
+            almax = 1;
+        elseif ialmax == 1
             % maximum step length
-            almax = a*gd_prev/gd
+            almax = a*gd_prev/gd;
         else
             % maximum step length
-            almax = 2*(fx - fx_prev)/gd
+            almax = 2*(fx - fx_prev)/gd;
         end
 
         % Line search:
         if ils == 1
             % Exact line search:
-            Q = hess(f, x); a = -(Q*x)'*d/(d'*Q*d);
+            a = -h(x)'*d/(d'*h(x)*d);
         elseif ils == 2
             % uo_BLS:
             [a, ~] = uo_BLS(x, d, f, g, almax, almin, rho, c1, c2, iW);

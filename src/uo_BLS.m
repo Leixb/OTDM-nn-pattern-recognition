@@ -4,7 +4,6 @@ function [al, iWout] = uo_BLS(x, d, f, g, almax, almin, rho, c1, c2, iW)
   % iWout = 1: al satisfies (WC1)
   % iWout = 2: al satisfies WC
   % iWout = 3: al satisfies SWC
-
   % input validation
   if ~ismember(iW, [1, 2])
     error('iW must be 1 (WC) or 2 (SWC)')

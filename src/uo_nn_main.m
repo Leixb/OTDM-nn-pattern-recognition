@@ -1,4 +1,4 @@
-clear;
+%clear;
 %
 % Parameters for dataset generation
 %
@@ -20,6 +20,11 @@ sg_emax = kmax; sg_ebest = floor(0.01*sg_emax);               % SGM stopping con
 %
 % Optimization
 %
+
+ils = 2;
+isd = 2;
+ialmax = 2;
+
 t1=clock;
 [Xtr,ytr,wo,fo,tr_acc,Xte,yte,te_acc,niter,tex]=uo_nn_solve(num_target,tr_freq,tr_seed,tr_p,te_seed,te_q,la,epsG,kmax,ils,ialmax,kmaxBLS,epsal,c1,c2,isd,sg_al0,sg_be,sg_ga,sg_emax,sg_ebest,sg_seed,icg,irc,nu);
 t2=clock;
