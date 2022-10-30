@@ -32,6 +32,9 @@ end
 # ╔═╡ 041e7fb7-1e16-4371-8ce1-4d46d40f2de1
 save_plots = true
 
+# ╔═╡ be78e2df-d68a-4583-a93f-e0584f522196
+ksge = 125
+
 # ╔═╡ f2054076-a752-4c0e-89c3-e554ace67dff
 df = let
 	df_ = DataFrame(CSV.File("uo_nn_batch_48089260-26060125_250.csv", delim=";"))
@@ -40,6 +43,8 @@ df = let
 	select!(df_, Not(:Column9))
 	isd = Dict(1 => "GM", 3 => "QNM", 7 => "SGM")
 	transform!(df_, :isd => ByRow(x -> isd[x]) => :isd)
+	transform!(df_, :niter => ByRow(x -> x/ksge) => :nepoch)
+	transform!(df_, [:niter, :nepoch, :isd] => ByRow((i,e,a) -> if a == "SGM" e else i end) => :nie)
 	df_
 end
 
@@ -60,6 +65,40 @@ plt_lambda_L = let
 	xlabel!(L"$\lambda$")
 	ylabel!(L"$L^*$")
 	plot!(legend_position=:left, legend_title="Algorithm")
+	plt
+end
+
+# ╔═╡ 3a71e36e-3a5b-4577-9e9e-55f8983e43e6
+plt_lambda_tr_acc = let
+	plt = @df df groupedboxplot(string.(:la), :tr_acc, group=(:isd))
+	xlabel!(L"$\lambda$")
+	ylabel!(L"$Accuracy^{TR}$")
+	#plot!(legend_position=:left, legend_title="Algorithm")
+	plt
+end
+
+# ╔═╡ f453fff9-eaae-4277-bdef-a07ddc648a34
+plt_lambda_te_acc = let
+	plt = @df df groupedboxplot(string.(:la), :te_acc, group=(:isd))
+	xlabel!(L"$\lambda$")
+	ylabel!(L"$Accuracy^{TE}$")
+	plot!(legend_position=:outerright, legend_title="Algorithm")
+	plt
+end
+
+# ╔═╡ d667587b-fc72-48fb-b228-b33c532b62b2
+plt_lambda_acc = let
+	tr = plot(plt_lambda_tr_acc, legend=false, title="TRAIN")
+	te = plot(plt_lambda_te_acc, title="TEST")
+	plot(tr, te, layout=2, link=:all)
+end
+
+# ╔═╡ 61efed34-e2f1-4324-8cfd-785685e44850
+plt_lambda_L_acc = let
+	plt = @df df scatter(:L, :te_acc, group=(:isd))
+	xlabel!(L"$L^*$")
+	ylabel!(L"$Accuracy^{TE}$")
+	plot!(legend_position=:topright, legend_title="Algorithm")
 	plt
 end
 
@@ -88,6 +127,33 @@ end
 plt_lambda_tex_niter = let
 	a = plot(plt_lambda_tex, legend=false, title=L"\texttt{tex}")
 	b = plot(plt_lambda_niter, title=L"\texttt{niter}")
+	plot(a, b, layout=2)
+end
+
+# ╔═╡ 0443d983-bbc4-4888-8230-f2035d55a4ea
+plt_tex = let
+	plt = @df df boxplot(:isd, :tex, group=:isd)
+	xlabel!(L"Algorithm")
+	ylabel!("Execution time (s) (log)")
+	plot!(yscale=:log10, yminorticks=true)
+	plot!(legend_position=:outerright)
+	plt
+end
+
+# ╔═╡ ba682ebe-b8d4-4e15-a011-c674e461909a
+plt_niter = let
+	plt = @df df boxplot(:isd, :niter, group=:isd)
+	xlabel!(L"Algorithm")
+	ylabel!("Iterations (log)")
+	plot!(yscale=:log10, yminorticks=true)
+	plot!(legend_position=:outerright)
+	plt
+end
+
+# ╔═╡ 128a55c2-7bd9-4cd2-b4f9-1fb7388e00e0
+plt_tex_niter = let
+	a = plot(plt_tex, legend=false, title=L"\texttt{tex}")
+	b = plot(plt_niter, title=L"\texttt{niter}", legend_title="Algorithm")
 	plot(a, b, layout=2)
 end
 
@@ -185,16 +251,32 @@ end
 # ╔═╡ e9de473b-84fb-4cfa-b680-e3bc67047a35
 plt_lambda_tex_over_niter_comb = plot(plt_lambda_tex_over_niter, plt_lambda_tex_over_niter_sgm)
 
+# ╔═╡ 1772af5d-57c0-4106-ae0f-4c8db6ac4fd4
+plt_lambda_tex_over_nie = let
+	plt = @df df groupedboxplot(string.(:la), :tex./:nie*1000, group=(:isd))
+	xlabel!(L"$\lambda$")
+	ylabel!("Execution time per iteration (ms)")
+	#ylims!(0,Inf)
+	#plot!(yscale=:log10, yminorticks=true)
+	plot!(legend_position=:outerright)
+	plt
+end
+
 # ╔═╡ 9ad9b9b0-c85d-4b1d-830a-2efbf077ad5d
 begin
 	if save_plots
 		savefig(plt_lambda_L, "lambda_L.tikz")
+		savefig(plt_lambda_tr_acc, "lambda_tr_acc.tikz")
+		savefig(plt_lambda_te_acc, "lambda_te_acc.tikz")
+		savefig(plt_lambda_acc, "lambda_acc.tikz")
 		savefig(plt_iter_alg, "iter_alg.tikz")
 		savefig(plt_lambda_tex_niter, "lambda_tex_niter.tikz")
+		savefig(plt_tex_niter, "tex_niter.tikz")
 		savefig(plt_lambda_iter, "lambda_iter.tikz")
 		savefig(plt_lambda_tex_over_niter, "lambda_tex_over_niter.tikz")
 		savefig(plt_lambda_tex_over_niter_sgm, "lambda_tex_over_niter_sgm.tikz")
 		savefig(plt_lambda_tex_over_niter_comb, "lambda_tex_over_niter_comb.tikz")
+		savefig(plot(plt_lambda_tex_over_nie, legend_title="Algorithm"), "lambda_tex_over_nie.tikz")
 	else
 		print("NOTHING")
 	end
@@ -203,7 +285,156 @@ end
 # ╔═╡ e66920f0-113a-4c58-b5bd-e021f1791d7b
 let 
 	g = groupby(df, [:isd, :la])
-	combine(g, :L => mean, :L => std)
+	combine(g, :L => mean, :L => std, :te_acc => mean, :te_acc => std)
+end
+
+# ╔═╡ fef1072c-dad1-4fb8-936a-61e94c2cb35e
+df_a = let
+	df_ = DataFrame(CSV.File("uo_nn_batch_48089260-26060125_20000.csv", delim=";"))
+	rename!(df_, strip.(names(df_)))
+	rename!(df_, "L*" => "L")
+	select!(df_, Not(:Column9))
+	isd = Dict(1 => "GM", 3 => "QNM", 7 => "SGM")
+	transform!(df_, :isd => ByRow(x -> isd[x]) => :isd)
+	transform!(df_, :niter => ByRow(x -> x/100) => :nepoch)
+	transform!(df_, [:niter, :nepoch, :isd] => ByRow((i,e,a) -> if a == "SGM" e else i end) => :nie)
+	df_
+end
+
+# ╔═╡ 814d4492-cb82-45dd-9bda-c9c8da1b9724
+plt_a_te_L = let
+	plt = @df df_a groupedboxplot(string.(:la), :L, group=(:isd))
+	xlabel!(L"$\lambda$")
+	ylabel!(L"$L^*$")
+	plot!(legend_position=:outerright, legend_title="Algorithm")
+	plt
+end
+
+# ╔═╡ 3af888bd-0758-47a8-afd7-733ec1593e3e
+plt_a_te_acc = let
+	plt = @df df_a groupedboxplot(string.(:la), :te_acc, group=(:isd))
+	xlabel!(L"$\lambda$")
+	ylabel!(L"$Accuracy^{TE}$")
+	plot!(legend_position=:outerright, legend_title="Algorithm")
+	plt
+end
+
+# ╔═╡ 2d87aba3-d658-4ef8-807b-0c898ea33ec9
+plt_a_tr_acc = let
+	plt = @df df_a groupedboxplot(string.(:la), :tr_acc, group=(:isd))
+	xlabel!(L"$\lambda$")
+	ylabel!(L"$Accuracy^{TR}$")
+	#plot!(legend_position=:outerright, legend_title="Algorithm")
+	plt
+end
+
+# ╔═╡ 40133787-3159-4f92-a8ea-bc0cfc6922c4
+plt_a_lambda_acc = let
+	tr = plot(plt_a_tr_acc, legend=false, title="TRAIN")
+	te = plot(plt_a_te_acc, title="TEST")
+	plot(tr, te, layout=2, link=:all)
+end
+
+# ╔═╡ d2be17f6-b6f5-4b60-87b7-d2e504ee7659
+plt_a_te_acc_detail = let
+	plt = @df filter(:la => x -> x != 0.1, df_a) groupedboxplot(string.(:la), :te_acc, group=(:isd))
+	xlabel!(L"$\lambda$")
+	ylabel!(L"$Accuracy^{TE}$")
+	ylims!(96,100)
+	plot!(legend_position=:outerright, legend_title="Algorithm")
+	plt
+end
+
+# ╔═╡ dbae2a59-67da-4a7c-b2f8-cf706bb4bec7
+plt_a_te_tex = let
+	plt = @df df_a groupedboxplot(string.(:la), :tex, group=(:isd))
+	xlabel!(L"$\lambda$")
+	ylabel!("Execution time (s) (log)")
+	plot!(yscale=:log10, yminorticks=true)
+	plot!(legend_position=:outerright, legend_title="Algorithm")
+	plt
+end
+
+# ╔═╡ 59176c25-9443-44b2-bfe3-24313efe1188
+plt_a_te_nie = let
+	plt = @df df_a groupedboxplot(string.(:la), :nie, group=(:isd))
+	xlabel!(L"$\lambda$")
+	ylabel!("Iterations (log)")
+	plot!(yscale=:log10, yminorticks=true)
+	ylims!(1,Inf)
+	plot!(yminorticks=true, yticks=[1, 10, 100, 1000])
+	
+	plot!(legend_position=:outerright, legend_title="Algorithm")
+	plt
+end
+
+# ╔═╡ 86838998-0bd4-44cc-ba5f-56a35ca687ab
+plt_a_tex_over_nie = let
+	plt = @df df_a groupedboxplot(string.(:la), :tex./:nie*1000, group=(:isd))
+	xlabel!(L"$\lambda$")
+	ylabel!("Execution time per iteration (ms)")
+	#ylims!(0,Inf)
+	#plot!(yscale=:log10, yminorticks=true)
+	plot!(legend_position=:outerright)
+	plt
+end
+
+# ╔═╡ de804457-95c2-46b9-96a2-4665c3240117
+plt_comp_tex = let
+	a = plot(plt_lambda_tex_over_nie, legend=false, yscale=:log10, title="Experiment 1", minorticks=true, ylims=(1,Inf))
+	b = plot(plt_a_tex_over_nie, legend_title="Algorithm", yscale=:log10, title="Experiment 2", minorticks=true, ylims=(1,Inf))
+	plot(a, b, layout=2, link=:all)
+end
+
+# ╔═╡ 94ba1a49-00b5-4e56-a0dc-e2f459d6b153
+plt_lambda_nie = let
+	plt = @df df groupedboxplot(string.(:la), :nie, group=(:isd))
+	xlabel!(L"$\lambda$")
+	ylabel!("Iterations (log)")
+	plot!(yscale=:log10, yminorticks=true)
+	ylims!(1,Inf)
+	plot!(yminorticks=true, yticks=[1, 10, 100, 1000])
+	
+	#plot!(legend_position=:outerright, legend_title="Algorithm")
+	plt
+end
+
+# ╔═╡ 61abeb7d-b463-4b16-9cf2-c4351d392bdf
+plt_comp_niter = let
+	a = plot(plt_lambda_nie, legend=false, yscale=:log10, title="Experiment 1")
+	b = plot(plt_a_te_nie, legend_title="Algorithm", yscale=:log10, title="Experiment 2")
+	plot(a, b, layout=2, link=:all)
+end
+
+# ╔═╡ 46baf003-4c7b-471d-8df0-af8a0062e339
+plt_tnie_ratio = let
+	ex1_tnie = df.tex ./ df.nie
+	ex2_tnie = df_a.tex ./ df_a.nie
+	
+	inc = ex2_tnie./ex1_tnie
+	la = df_a.la
+	isd = df_a.isd
+	groupedboxplot(string.(la), inc, group=isd)
+	xlabel!(L"$\lambda$")
+	ylabel!("Ratio of increase in time per iteration")
+	plot!(legend_title="Algorithm", legend_position=:outerright)
+end
+
+# ╔═╡ 92f8a757-5569-48b6-8184-14bbc8746409
+begin
+	if save_plots
+		savefig(plt_a_te_acc, "acc_te_acc.tikz")
+		savefig(plt_a_lambda_acc, "acc_lambda_acc.tikz")
+		savefig(plt_a_te_nie, "acc_te_nie.tikz")
+		savefig(plt_a_te_tex, "acc_te_tex.tikz")
+		savefig(plt_a_te_acc_detail, "acc_te_detail.tikz")
+		savefig(plt_a_tex_over_nie, "acc_tex_over_nie.tikz")
+		savefig(plt_tnie_ratio, "acc_tnie_ratio.tikz")
+		savefig(plt_comp_niter, "comp_niter.tikz")
+		savefig(plt_comp_tex, "comp_tex.tikz")
+	else
+		print("NOTHING")
+	end
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1476,13 +1707,21 @@ version = "1.4.1+0"
 # ╠═4fad50ea-57c2-11ed-131d-8339db005027
 # ╠═e5d914bd-db71-4681-a0fe-8d45686b3bf4
 # ╠═041e7fb7-1e16-4371-8ce1-4d46d40f2de1
+# ╠═be78e2df-d68a-4583-a93f-e0584f522196
 # ╠═f2054076-a752-4c0e-89c3-e554ace67dff
 # ╠═5b30e7fa-7925-4b50-86ea-1ef17c17ce01
 # ╠═5e74a631-7eb0-40be-9a0a-05c2f6c50e12
 # ╠═582dd0f2-bfb3-4971-a5ac-b77f686811fc
+# ╠═3a71e36e-3a5b-4577-9e9e-55f8983e43e6
+# ╠═f453fff9-eaae-4277-bdef-a07ddc648a34
+# ╠═d667587b-fc72-48fb-b228-b33c532b62b2
+# ╠═61efed34-e2f1-4324-8cfd-785685e44850
 # ╠═af98ff89-2fb4-443c-bb43-a17454ef6910
 # ╠═e20f1fa6-bffd-45dc-93b4-3963f288861b
 # ╠═39556674-8446-4fb4-8286-ebc81bacfcbb
+# ╠═0443d983-bbc4-4888-8230-f2035d55a4ea
+# ╠═ba682ebe-b8d4-4e15-a011-c674e461909a
+# ╠═128a55c2-7bd9-4cd2-b4f9-1fb7388e00e0
 # ╠═7f5334a0-5e88-4cff-8884-2bbed786284f
 # ╠═8929ddff-3db4-4ada-bd01-9e9add136abe
 # ╠═749f2569-efa3-4d76-be6d-830915399606
@@ -1491,7 +1730,22 @@ version = "1.4.1+0"
 # ╠═2a5d22aa-8685-40bf-9a52-92362b60807e
 # ╠═d0e6705c-7519-4a75-b207-a99dfa766693
 # ╠═e9de473b-84fb-4cfa-b680-e3bc67047a35
+# ╠═1772af5d-57c0-4106-ae0f-4c8db6ac4fd4
 # ╠═9ad9b9b0-c85d-4b1d-830a-2efbf077ad5d
 # ╠═e66920f0-113a-4c58-b5bd-e021f1791d7b
+# ╠═fef1072c-dad1-4fb8-936a-61e94c2cb35e
+# ╠═814d4492-cb82-45dd-9bda-c9c8da1b9724
+# ╠═3af888bd-0758-47a8-afd7-733ec1593e3e
+# ╠═2d87aba3-d658-4ef8-807b-0c898ea33ec9
+# ╠═40133787-3159-4f92-a8ea-bc0cfc6922c4
+# ╠═d2be17f6-b6f5-4b60-87b7-d2e504ee7659
+# ╠═dbae2a59-67da-4a7c-b2f8-cf706bb4bec7
+# ╠═59176c25-9443-44b2-bfe3-24313efe1188
+# ╠═86838998-0bd4-44cc-ba5f-56a35ca687ab
+# ╠═de804457-95c2-46b9-96a2-4665c3240117
+# ╠═94ba1a49-00b5-4e56-a0dc-e2f459d6b153
+# ╠═61abeb7d-b463-4b16-9cf2-c4351d392bdf
+# ╠═46baf003-4c7b-471d-8df0-af8a0062e339
+# ╠═92f8a757-5569-48b6-8184-14bbc8746409
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

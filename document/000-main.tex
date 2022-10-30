@@ -20,6 +20,7 @@
 \usepackage{tabularray}
 \UseTblrLibrary{siunitx}
 \UseTblrLibrary{booktabs}
+\usepackage{fancyhdr}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % EXTRA PACKAGES / CONFIG
@@ -86,11 +87,18 @@
 \setlength{\parskip}{1em plus 0.5em minus 0.2em}
 %\setlength{\parindent}{0pt}
 
+%fancy headers
+\setlength{\headheight}{14.5pt}
+\pagestyle{fancy}
+
 \include{010-convergence}
 \include{020-accuracy}
 
 % \nocite{*}
 
 % \printbibliography
+
+\appendix
+\include{030-appendix}
 
 \end{document}

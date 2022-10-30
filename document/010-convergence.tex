@@ -2,6 +2,9 @@
 \section{Study of Convergence}%
 \label{sec:convergence}
 
+\subsection{Experiment Setup}%
+\label{sub:convergence_setup}
+
 We'll study the global and local convergence of
 the three algorithms only in terms of the objective function
 $\tilde L$. In order to do so, we'll use a small dataset
@@ -30,13 +33,29 @@ ensure that the results are reproducible, we'll use the following seeds:
 Finally, the maximum number of iterations will be set to \texttt{kmax=1000}
 (\texttt{sg\_emax} for \texttt{SGM}).
 
+Some other parameters are fixed to the following values:
+\begin{center}
+    \begin{BVerbatim}
+epsG = 10^-6;                                                
+ils=3; ialmax = 1; kmaxBLS=10; epsal=10^-3; c1=0.01; c2=0.45;
+sg_al0 = 2; sg_be = 0.3; sg_ga = 0.01;
+sg_ebest = floor(0.01*sg_emax);
+\end{BVerbatim}
+\end{center}
 
+The complete implementation can be found in the source code
+of the project. To run all the experiments we used
+\texttt{uo\_nn\_batch}. All the results are in \cref{sec:appendix}
 
+\pagebreak
 \subsection{Global convergence}
+
+\subsubsection{Objective function}%
+\label{ssub:obj_func}
 
 \Cref{fig:lambda_L} shows the relationship between the parameter
 $\lambda$ and the value of the objective function $\tilde L$ at
-the convergence of the algorithms. There is a clear positive
+the convergence of the algorithms ($L^* = L(w^*)$). There is a clear positive
 trend between $\lambda$ and $L^*$ for all three algorithms.
 
 \begin{figure}[ht]
@@ -65,6 +84,28 @@ in \cref{tab:lambda_L}.
     \input{global_conv_table}
 \end{table}
 
+\subsubsection{Accuracy}\label{ssub:acc_conv}
+
+\Cref{fig:lambda_acc} shows the relationship between the regularization
+parameter $\lambda$ and the accuracy on the train and test sets. As expected,
+when $\lambda$ increases, the accuracy on the train and test set decreases,
+this is consistent with the results from the previous section, where we found
+that the value of the objective function $L^*$ increases with $\lambda$.
+
+However, the accuracy on the \emph{train} set for $SGM$ is near 50\% for $SGM$ with
+$\lambda = 0.1$, while on the \emph{test} set is much higher around 93\%. This
+seems counter-intuitive, but can be explained by the fact that the train
+set is unbalanced having 50\% of the samples being the target digit while
+the test set is 10\%. Nonetheless, these values indicate that $SGM$ is probably
+classifying all as false, hence the values being close to the proportion of
+the target on the data.
+
+\begin{figure}[H]
+\input{../analysis/lambda_acc.tikz}
+\caption{Accuracy on train and test error for each algorithm and $\lambda$}%
+\label{fig:lambda_acc}
+\end{figure}
+
 % \begin{figure}[ht]
 % \input{../analysis/iter_alg.tikz}
 % \caption{Number of iterations for each algorithm}%
@@ -76,14 +117,76 @@ in \cref{tab:lambda_L}.
 
 \subsubsection{Speed of convergence}
 
+To study the speed of convergence, we'll start by looking at
+the boxplots of execution time of the algorithms as well as
+the number of iterations. The results are shown in \cref{fig:tex_niter}.
+
+Note that the iteration and execution time values are in logarithmic scale
+to better visualize the results.
+
+By execution time, $GM$ is the slowest, followed by $QNM$ and then $SGM$ which
+if the fastest. However, there is a huge variability in the execution times
+of the algorithms and there are some notable outliers (specially in the case
+of $SGM$).
+
+The number of iterations shows that $SGM$ takes the most iterations to
+reach the results. This is expected since the iterations of $SGM$ are
+counting the inner iterations of the mini-batches and as such cannot
+be directly compared to the other two algorithms. One thing to notice
+is that there are some outliers for $SGM$ several orders of magnitude
+above the expected number of iterations, indicating that in some cases
+the algorithm is not converging. $QNM$ converges in fewer iterations
+than $GM$.
+
+\begin{figure}[H]
+\input{../analysis/tex_niter.tikz}
+\caption{Execution time and iterations for each algorithm}%
+\label{fig:tex_niter}
+\end{figure}
+
+\subsubsection{Effect of the regularization parameter on the speed of convergence}
+
+We will now take produce the same plot as in~\cref{fig:tex_niter} but
+also showing the $\lambda$ parameter. The results are shown
+in~\cref{fig:lambda_tex_niter}.
+
+% If we now look at the execution time for each algorithm and
+% how it depends on $\lambda$ as shown in \cref{fig:lambda_tex_niter},
+% where we show the execution time on the left subplot and the
+% number of iterations on the right subplot.
+
+We can see that
+when $\lambda = 0$, there is a wide range of execution times
+across all algorithms, but the fastest algorithm is $QNM$.
+
+When using a regularizer, the execution time is more consistent
+and the fastest algorithm is $SGM$ by a noticeable margin.
+This is despite the fact that $SGM$ has more iterations than the
+other two methods, but as we will see, the execution time per
+iteration is much lower for $SGM$, since the computations are
+much simpler.
+
+\begin{figure}[H]
+\input{../analysis/lambda_tex_niter.tikz}
+\caption{Number of iterations for each algorithm}%
+\label{fig:lambda_tex_niter}
+\end{figure}
+
+
 % Compare the speed of convergence of the three algorithms in terms of the
 % execution time and number of iterations.
 
 \Cref{fig:lambda_iter} shows the number of iterations for each
 combination of algorithm and $\lambda$ for the different target
-numbers. The iterations are in logarithmic scale and we show
+numbers.
+The iterations are in logarithmic scale and we show
 the maximum number of iterations for each algorithm as a red line
-(1000 for $GM$ and $QNM$ and 125125 for $SGM$).
+(1000 for $GM$ and $QNM$ and 125000 for $SGM$).
+
+This is the same data shown in the \texttt{niter}
+subplot of \cref{fig:lambda_tex_niter}, but showing all the datapoints
+for each digit instead of the boxplots. It allows us to visualize
+what are the outliers and stable are the algorithms.
 
 \begin{figure}[H]
 \input{../analysis/lambda_iter.tikz}
@@ -115,26 +218,6 @@ other two algorithms, but we can see that with $\lambda = 0$,
 $SGM$ does not converge in 5 instances, while it converges in
 the rest.
 
-If we now look at the execution time for each algorithm and
-how it depends on $\lambda$ as shown in \cref{fig:lambda_tex_niter},
-where we show the execution time on the left subplot and the
-number of iterations on the right subplot. We can see that
-when $\lambda = 0$, there is a wide range of execution times
-across all algorithms, but the fastest algorithm is $QNM$.
-
-When using a regularizer, the execution time is more consistent
-and the fastest algorithm is $SGM$ by a noticeable margin.
-This is despite the fact that $SGM$ has more iterations than the
-other two methods, but as we will see, the execution time per
-iteration is much lower for $SGM$, since the computations are
-much simpler.
-
-\begin{figure}[H]
-\input{../analysis/lambda_tex_niter.tikz}
-\caption{Number of iterations for each algorithm}%
-\label{fig:lambda_tex_niter}
-\end{figure}
-
 % Analyse how the speed of convergence of the three algorithms depend on the
 % value of lambda and try to find an explanation for the observed dependence,
 % if any.
@@ -142,16 +225,19 @@ much simpler.
 % Analyze the running time per iteration and try to find an explanation for
 % the different values among the three algorithms.
 
-\subsubsection{Execution time per iteration}
+\subsubsection{Execution time per iteration}%
+\label{ssub:time_per_iter}
 
-Let us now look at the execution time per iteration for each
+In the previous section, we have seen the number of iterations
+and the execution time for each algorithm separately (\cref{fig:tex_niter}).
+Let us now look at relationship between the two: the execution time per iteration for each
 algorithm and how it depends on $\lambda$. Since the execution time
 of $SGM$ is much lower than the other two, we cannot plot it in the
 same scale. In \cref{fig:lambda_tex_over_niter_comb} we show the
 boxplots of the execution time per iteration for each algorithm
 and $\lambda$, notice that for $GM$ and $QNM$ we use
-\si{\milli\second} (\SI{1e-3}{\second}) as the unit of time, while for $SGM$ we use
-\si{\micro\second} (\SI{1e-6}{\second}).
+\si{\milli\second} ($10^{-3}$s) as the unit of time, while for $SGM$ we use
+\si{\micro\second} ($10^{-6}$s).
 
 The fastest execution time per iteration is for $SGM$, with a mean
 of \SI{13}{\micro\second} per iteration. It seems that the effect
@@ -169,13 +255,53 @@ memory allocation, etc. This means that with higher values of $\lambda$,
 when the algorithm converges faster the execution time per iteration
 is higher since the initialization time is a bigger part of the total.
 
-\begin{figure}[H]
+\begin{figure}[htb]
     \input{../analysis/lambda_tex_over_niter_comb.tikz}
     \caption{Execution time per iteration as a function of $\lambda$ for the three algorithms.}%
     \label{fig:lambda_tex_over_niter_comb}
 \end{figure}
 
-\subsection{Discussion}
+\subsubsection{Using epochs for SGM}%
+\label{ssub:epochs}
+
+In order to compare the iterations of $SGM$ with the other two,
+we can count the number of epochs of $SGM$ instead of the total iterations.
+This can be done given that the number of iterations is given by the
+following formula:
+\begin{equation}\label{eq:ksg}
+    k^{SG} = e^{SG} \cdot k^{SG}_e
+\end{equation}
+where $k^{SG}$ is the total number of iterations, $e^{SG}$ is the number of
+epochs and $k^{SG}_e$ is the number of iterations per epoch. Since the number
+of iterations per epoch is constant and depends on the number of samples
+($p = 250$) and $\gamma^{SG} = 0.01$, we can compute the number of epochs
+as follows:
+\begin{equation}\label{eq:esg}
+    \begin{rcases}
+        k^{SG}_e &= \left\lceil\frac{p}{\lfloor \gamma^{SG} \cdot p \rfloor}\right\rceil \\
+        \gamma^{SG} &= 0.01 \\
+        p &= 250
+    \end{rcases} k^{SG}_e = 125 \xRightarrow{\text{\cref{eq:ksg}}} \boxed{e^{SG} = \frac{k^{SG}}{125}}
+\end{equation}
+From~\cref{eq:esg} we determined that 125 iterations correspond to one epoch. We can
+now plot the execution time per epoch for $SGM$ and compare it with $GM$ and $QNM$.
+The revised plot is shown in \cref{fig:lambda_tex_over_niter_comb2}. When comparing
+the $SGM$ epochs to the iterations of the other algorithms, we can see that $SGM$ epochs
+are slower than iterations of $GM$ but faster than iterations of $QNM$ for
+$\lambda \in \{0, 0.01\}$, but for $\lambda = 0.1$ $SGM$ is faster than $GM$ too. This
+is due to the fact that the value of $\lambda$ does not affect the execution time of
+the epochs of $SGM$, as we discussed previously.
+
+
+\begin{figure}[H]
+    \input{../analysis/lambda_tex_over_nie.tikz}
+    \caption{Execution time per iteration as a function of $\lambda$ for the three algorithms. Using
+    epochs for $SGM$}%
+    \label{fig:lambda_tex_over_niter_comb2}
+\end{figure}
+
+\subsection{Discussion}%
+\label{ssub:discussion}
 
 Our objective was to answer the question of which combination of algorithm and $\lambda$
 is the most efficient, we have seen that the global convergence of
