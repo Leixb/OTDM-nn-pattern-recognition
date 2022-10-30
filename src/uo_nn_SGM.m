@@ -47,15 +47,15 @@ while e <= sg_emax && s < sg_ebest
         % mini-batch
         S = P(i*m+1:(i+1)*m);
         X = Xtr(:, S);
-        y = ytr(:, S)';
+        y = ytr(S);
 
         % direction
-        d = mean(-gL(w, X, y), 2);
+        d = -gL(w, X, y);
 
         if k <= k_sg
             a = (1 - k/k_sg) * sg_al0 + k/k_sg * a_sg;
         else
-            a = asg;
+            a = a_sg;
         end
 
         % update

@@ -87,8 +87,8 @@ fo = Ltr(wo);
 y_fit_tr = y(Xtr, wo);
 y_fit_te = y(Xte, wo);
 
-tr_acc = sum(round(y_fit_tr) == ytr)/size(ytr,2);
-te_acc = sum(round(y_fit_te) == yte)/size(yte,2);
+tr_acc = sum(round(y_fit_tr) == ytr)/size(ytr,2)*100;
+te_acc = sum(round(y_fit_te) == yte)/size(yte,2)*100;
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
