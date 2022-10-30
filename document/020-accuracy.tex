@@ -55,10 +55,33 @@ when using the same regularization parameter.
 Given that the accuracy of $\lambda=0.1$ is notably lower than the rest it
 makes it difficult to distinguish the differences from the other values.
 Any accuracy lower than 90\% given the proportion of the samples is no better
-than classifying everything as a non-match. Therefore, the values obtained
-with $\lambda=0.1$ are not considered in the following analysis.
+than classifying everything as a non-match.
+% Therefore, the values obtained with $\lambda=0.1$ are not considered in the following analysis.
+In fact, if we look at the results for one of the instances with accuracy 89.95\%,
+we can see that everything is a false negative as illustrated in \cref{fig:fneg} where
+we can see that everything is classified as not a 3.
 
-Lets now look at the detail on the accuracy of the \emph{test} set for
+\begin{figure}[H]
+    \includegraphics[width=\textwidth]{../src/SGM_te_plot_2k_01.png}
+    \caption{Sample of first 250 from test set of $SGM$ with $\lambda=0.1$ and target 3,
+    false negatives are shown in red and true negatives in blue}
+    \label{fig:fneg}
+\end{figure}
+
+For reference, \cref{fig:fneg-001} shows the same sample but with $\lambda=0.01$, where
+we can see that now there are true positives (in green) and much fewer false negatives.
+The accuracy in this case is 97.95\%. There are no false positives (pink) in this particular
+sample.
+
+\begin{figure}[H]
+    \includegraphics[width=\textwidth]{../src/SGM_te_plot_2k_001.png}
+    \caption{Sample of first 250 from test set of $SGM$ with $\lambda=0.01$ and target 3,
+    false negatives are shown in red, true negatives in blue and true positives in green}
+    \label{fig:fneg-001}
+\end{figure}
+
+\pagebreak
+Let's now look at the detail on the accuracy of the \emph{test} set for
 $\lambda \neq 0.1$. This detailed magnification is shown in~\cref{fig:lambda_acc_2_detail}.
 There, we can see that without regularization ($\lambda = 0$) the accuracy is
 near 99.7\% for all three methods, while with $\lambda = 0.01$ the accuracy is slightly
@@ -181,7 +204,8 @@ while $SGM$ has sublinear increase.
 
 \begin{figure}[H]
     \input{../analysis/acc_tnie_ratio.tikz}
-    \caption{Comparison of the number of iterations for the two experiments}
+    \caption{Comparison of the increase the execution time per iteration from one
+    experiment to the other}
     \label{fig:comp_ratio}
 \end{figure}
 
@@ -208,5 +232,10 @@ increase in data size.
 
 With our limited sample size,
 we can conclude that for larger datasets,
-$SGM$ is the best method to use by all accounts.
+$SGM$ is the best method to use by all accounts. We can also conclude that the value
+of the regularization parameter $\lambda$ is really important and should be tuned
+carefully. On one hand, if the value of $\lambda$ is too small, the algorithm can take a long time
+to converge or exceed the maximum number of iterations. On the other hand, if the value
+of $\lambda$ is too large, the algorithm can converge to a local minimum were all the results
+are negative, which is undesirable.
 

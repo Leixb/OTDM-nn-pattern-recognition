@@ -94,11 +94,43 @@
 \include{010-convergence}
 \include{020-accuracy}
 
-% \nocite{*}
+\null
+\vspace{6em}
+\section{Closing thoughts}%
+\label{sec:final-remarks}
 
+We have analyzed the convergence and accuracy of 3 different algorithms and how
+it relates with the value of the regularization parameter $\lambda$. We have also
+seen the effect of the size of the training set on the execution time and that
+$SGM$ is the best algorithm in terms of accuracy and convergence for larger datasets.
+
+However, there are additional parameters that we have not considered, for instance
+the line searching algorithm, the Wolfe conditions or the various parameters of
+$SGM$. Additionally, we only performed a single run for each algorithm and combination
+of parameters, so to draw more robust conclusions we would need to perform multiple
+runs with different seeds and average the results.
+
+It may be interesting to do a grid search over a larger range of parameters and
+see how the results change.
+
+\pagebreak
+\appendix
+\section{References}
+
+I used MATLAB~\cite{noauthor_matlab_2022} for the simulations and algorithms.
+For the analysis of the
+results and the plots I used Julia~\cite{bezanson_julia_2017}
+and its excellent packages for plotting~\cite{breloff_plotsjl_2022,plas_fonspplutojl_2022,carlsson_pgfplotsxjl_2022}.
+
+Below is a list of the software and the most relevant packages used in this
+project. There are also the two chapters of the book on Numerical Optimization~\cite{nocedal_line_2006,nocedal_quasi-newton_2006} which I
+used as reference along with the course materials.
+\printbibliography[heading=none]
 % \printbibliography
 
-\appendix
+\pagebreak
+\listoffigures \listoftables
+
 \include{030-appendix}
 
 \end{document}
