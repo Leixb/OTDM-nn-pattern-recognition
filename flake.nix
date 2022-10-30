@@ -16,6 +16,8 @@
           which
           python39Packages.pygments
           octaveFull
+          julia-bin
+          poppler_utils
         ];
 
         texlive = pkgs.texlive.combined.scheme-full;
