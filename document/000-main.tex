@@ -10,9 +10,16 @@
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.18}
 \input{002-preamble-pgfplots}
+\usepgfplotslibrary{external}
+\tikzexternalize % Activated!
 
 % \usepackage{siunitx}
 \usepackage[separate-uncertainty]{siunitx}
+
+\usepackage{fancyvrb}
+\usepackage{tabularray}
+\UseTblrLibrary{siunitx}
+\UseTblrLibrary{booktabs}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % EXTRA PACKAGES / CONFIG
@@ -41,7 +48,8 @@
 % remove when using \maketitle:
 \renewcommand\and{\\[\baselineskip]}
 
-\title{\Huge Pattern Recognition with Neural Networks\\ \Large OTDM}
+\title{\Huge Pattern Recognition \\ with \\ Single Layer Neural Networks\\[1em]
+\Large \hphantom{M}MDS \textendash{} OTDM}
 \author{Aleix Boné}
 \date{Fall 2022}
 
@@ -61,14 +69,14 @@
 % TOC & lists
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% \pagenumbering{Roman}
+\pagenumbering{Roman}
 
-%\setcounter{tocdepth}{2}
-% \tableofcontents \pagebreak
+% \setcounter{tocdepth}{2}
+\tableofcontents \pagebreak
 
 % \listoffigures \listoftables \clearpage
 
-% \pagenumbering{arabic}
+\pagenumbering{arabic}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % SECTIONS

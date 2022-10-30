@@ -11,18 +11,28 @@
     \centering
     \includegraphics[width=0.9\textwidth]{institution-logo}
     \null%
-    \vspace{3em}
-    {\Huge \bfseries \@title \par}
     \vspace{2em}
+    {\Huge \bfseries \@title \par}
+    \vspace{3em}
     {\large \scshape \@date \par}
+    \vspace{2em}
+    \begin{center}
+    \includegraphics[width=0.9\textwidth]{../src/SGM_te_plot.png}
+    \end{center}
     \vfill
 \begin{center}
     % Supplementary image
 \end{center}
-    \vspace{5em}
+    \vspace{1em}
 
     \vfill
-    {\raggedleft \large \@author \par}
+    {{\raggedleft \large \@author \par}
+    \vspace{2em}
+    {\raggedleft \large \tt
+        \textbf{tr\_seed:} 48089260 \\
+        \textbf{te\_seed:} 26060125 \\
+        \textbf{sg\_seed:} \hphantom{00}565544 \\
+\par}}
 }
 \end{titlepage}
 \makeatother

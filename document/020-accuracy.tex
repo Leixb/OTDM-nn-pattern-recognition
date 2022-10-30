@@ -1,3 +1,24 @@
 %! TEX root = ../000-main.tex
 
 \section{Study of Accuracy}
+
+We'll study the accuracy of the three algorithms. To do so, we
+repeat the experiments of \cref{sec:convergence} but this time
+we'll use a more realistic dataset, generated from the following
+parameters:
+\begin{center}
+    \begin{BVerbatim}
+    tr_p = 20000; te_q = tr_p/10; tr_freq = 0.0;
+    \end{BVerbatim}
+\end{center}
+
+We'll use the values of $\lambda$ that gave the best accuracy in
+the experiments from~\cref{sec:convergence} for each algorithm.
+These previous results are shown in~\cref{tab:te_acc_250}.
+
+\begin{table}[ht]
+    \caption{Accuracy on test set from previous experiment (\texttt{tr\_p = 250}) with
+    the highest average accuracy for each method highlighted}%
+    \label{tab:te_acc_250}%
+    \input{table_te_acc_250}
+\end{table}

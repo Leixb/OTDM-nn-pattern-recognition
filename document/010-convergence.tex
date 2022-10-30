@@ -1,9 +1,36 @@
 %! TEX root = ../000-main.tex
-\section{Study of Convergence}
+\section{Study of Convergence}%
+\label{sec:convergence}
 
 We'll study the global and local convergence of
 the three algorithms only in terms of the objective function
-$\tilde L$.
+$\tilde L$. In order to do so, we'll use a small dataset
+to reduce the computational cost of the experiments. The
+parameters to generate the dataset are the following:
+\begin{center}
+    \begin{BVerbatim}
+    tr_p = 250; te_q = 250; tr_freq = 0.5;
+    \end{BVerbatim}
+\end{center}
+
+We'll run the program for all combinations of target digit,
+$\lambda$, and algorithm shown below:
+\begin{alignat*}{3}
+    \text{digit} &\in \{0, 1, 2, 3, 4, 5, 6, 7, 8, 9\} & \quad
+    \lambda &\in \{0, 0.01, 0.1\} & \quad
+    \text{algorithm} &\in \{\text{GM}, \text{QNM}, \text{SGM}\}
+\end{alignat*}
+Which amounts to $10 \cdot 3 \cdot 3 = 90$ instances to be solved. To
+ensure that the results are reproducible, we'll use the following seeds:
+\begin{center}
+    \begin{BVerbatim}
+        tr_seed=48089260; te_seed=26060125; sg_seed=565544;
+    \end{BVerbatim}
+\end{center}
+Finally, the maximum number of iterations will be set to \texttt{kmax=1000}
+(\texttt{sg\_emax} for \texttt{SGM}).
+
+
 
 \subsection{Global convergence}
 
@@ -44,6 +71,7 @@ in \cref{tab:lambda_L}.
 % \label{fig:iter_alg}
 % \end{figure}
 
+\pagebreak
 \subsection{Local convergence}
 
 \subsubsection{Speed of convergence}
@@ -114,6 +142,8 @@ much simpler.
 % Analyze the running time per iteration and try to find an explanation for
 % the different values among the three algorithms.
 
+\subsubsection{Execution time per iteration}
+
 Let us now look at the execution time per iteration for each
 algorithm and how it depends on $\lambda$. Since the execution time
 of $SGM$ is much lower than the other two, we cannot plot it in the
@@ -145,7 +175,7 @@ is higher since the initialization time is a bigger part of the total.
     \label{fig:lambda_tex_over_niter_comb}
 \end{figure}
 
-\subsection{Conclusions}
+\subsection{Discussion}
 
 Our objective was to answer the question of which combination of algorithm and $\lambda$
 is the most efficient, we have seen that the global convergence of
