@@ -68,7 +68,8 @@ plt_lambda_niter = let
 	plt = @df df groupedboxplot(string.(:la), :niter, group=(:isd))
 	xlabel!(L"$\lambda$")
 	ylabel!("Iterations (log)")
-	plot!(yscale=:log10)
+	plot!(yscale=:log10, yminorticks=true)
+	#ylims!(10,Inf)
 	plot!(legend_position=:outerright, legend_title="Algorithm")
 	plt
 end
@@ -77,8 +78,8 @@ end
 plt_lambda_tex = let
 	plt = @df df groupedboxplot(string.(:la), :tex, group=(:isd))
 	xlabel!(L"$\lambda$")
-	ylabel!("Execution time (s)")
-	plot!(yscale=:log10)
+	ylabel!("Execution time (s) (log)")
+	plot!(yscale=:log10, yminorticks=true)
 	plot!(legend_position=:outerright)
 	plt
 end
@@ -92,17 +93,97 @@ end
 
 # ╔═╡ 7f5334a0-5e88-4cff-8884-2bbed786284f
 plt_iter_alg = let
-	plt = @df df boxplot(string.(:num_target), :niter,  group=:isd, layout=(1, 3), link=:x, title=["GM" "QNM" "SGM"], color=[1 2 3])
-	#@df df scatter!(string.(:num_target), :niter, group=:isd, layout=(1, 3), link=:x)
-
+	plt = @df filter(:isd => x -> x != "SGM", df) boxplot(
+		string.(:num_target), :niter,  group=:isd,
+		layout=(1, 2), link=:all, title=["GM" "QNM"],
+		color=[1 2 3])
 	plot!(legend=false)
 	hline!([1000 1000])
-	hline!([1000 1000 0], opacity=0)
 	scatter!([(8.5,1000)], color=:red)
 	ylabel!("Iterations")
 	xlabel!("Target number")
 	#plot!(yscale=:log10)
 end
+
+# ╔═╡ 8929ddff-3db4-4ada-bd01-9e9add136abe
+plt_iter_alg_sgm = let
+	plt = @df filter(:isd => x -> x == "SGM", df) scatter(
+		string.(:num_target), :niter,  title="SGM",
+		group=string.(:la))
+	#ylabel!("Iterations")
+	#xlabel!("Target number")
+	plot!(legend_title=L"\lambda", legend_position=:bottomright)
+	hline!([125125], color=:red, label="kmax")
+	ylims!(1,125125)
+	plot!(yminorticks=true, yticks=[1, 10, 100, 1000, 10000])
+	plot!(yscale=:log10)
+	#plot!(legend=false)
+end
+
+# ╔═╡ 749f2569-efa3-4d76-be6d-830915399606
+plt_iter_alg_gm = let
+	plt = @df filter(:isd => x -> x == "GM", df) scatter(
+		string.(:num_target), :niter,  title="GM",
+		group=string.(:la))
+	ylabel!("Iterations (log)")
+	#xlabel!("Target number")
+	#plot!(legend_title=L"\lambda", legend_position=:bottomleft)
+	ylims!(1,1000)
+	plot!(yminorticks=true, yticks=[1, 10, 100, 1000])
+	hline!([1000], color=:red, label="kmax")
+	plot!(yscale=:log10)
+	plot!(legend=false)
+end
+
+# ╔═╡ b74aea3c-06d6-4d2f-b76f-712c49822ce6
+plt_iter_alg_qnm = let
+	plt = @df filter(:isd => x -> x == "QNM", df) scatter(
+		string.(:num_target), :niter,  title="QNM",
+		group=string.(:la))
+	#ylabel!("Iterations")
+	xlabel!("Target number")
+	#plot!(legend_title=L"\lambda", legend_position=:bottomleft)
+	ylims!(1,1000)
+	plot!(yminorticks=true, yticks=[1, 10, 100, 1000])
+	hline!([1000], color=:red, label="kmax")
+	plot!(yscale=:log10)
+	plot!(legend=false)
+end
+
+# ╔═╡ a2a9aea2-84e1-46f2-8004-c148d02cdb1f
+plt_lambda_iter = let
+	plot(
+		plt_iter_alg_gm,
+		plt_iter_alg_qnm,
+		plt_iter_alg_sgm,
+		layout=(1,3)
+	)
+end
+
+# ╔═╡ 2a5d22aa-8685-40bf-9a52-92362b60807e
+plt_lambda_tex_over_niter = let
+	plt = @df filter(:isd => x -> x != "SGM", df) groupedboxplot(string.(:la), :tex./:niter*1000, group=(:isd))
+	xlabel!(L"$\lambda$")
+	ylabel!("Execution time per iteration (ms)")
+	ylims!(0,Inf)
+	#plot!(yscale=:log10, yminorticks=true)
+	plot!(legend_position=:bottomleft)
+	plt
+end
+
+# ╔═╡ d0e6705c-7519-4a75-b207-a99dfa766693
+plt_lambda_tex_over_niter_sgm = let
+	plt = @df filter(:isd => x -> x == "SGM", df) groupedboxplot(string.(:la), :tex./:niter*1e6, group=(:isd), color=3)
+	xlabel!(L"$\lambda$")
+	ylabel!(L"Execution time per iteration (\textbf{$\mu$s})")
+	ylims!(0,Inf)
+	#plot!(yscale=:log10, yminorticks=true)
+	plot!(legend_position=:bottomright)
+	plt
+end
+
+# ╔═╡ e9de473b-84fb-4cfa-b680-e3bc67047a35
+plt_lambda_tex_over_niter_comb = plot(plt_lambda_tex_over_niter, plt_lambda_tex_over_niter_sgm)
 
 # ╔═╡ 9ad9b9b0-c85d-4b1d-830a-2efbf077ad5d
 begin
@@ -110,6 +191,10 @@ begin
 		savefig(plt_lambda_L, "lambda_L.tikz")
 		savefig(plt_iter_alg, "iter_alg.tikz")
 		savefig(plt_lambda_tex_niter, "lambda_tex_niter.tikz")
+		savefig(plt_lambda_iter, "lambda_iter.tikz")
+		savefig(plt_lambda_tex_over_niter, "lambda_tex_over_niter.tikz")
+		savefig(plt_lambda_tex_over_niter_sgm, "lambda_tex_over_niter_sgm.tikz")
+		savefig(plt_lambda_tex_over_niter_comb, "lambda_tex_over_niter_comb.tikz")
 	else
 		print("NOTHING")
 	end
@@ -1399,6 +1484,13 @@ version = "1.4.1+0"
 # ╠═e20f1fa6-bffd-45dc-93b4-3963f288861b
 # ╠═39556674-8446-4fb4-8286-ebc81bacfcbb
 # ╠═7f5334a0-5e88-4cff-8884-2bbed786284f
+# ╠═8929ddff-3db4-4ada-bd01-9e9add136abe
+# ╠═749f2569-efa3-4d76-be6d-830915399606
+# ╠═b74aea3c-06d6-4d2f-b76f-712c49822ce6
+# ╠═a2a9aea2-84e1-46f2-8004-c148d02cdb1f
+# ╠═2a5d22aa-8685-40bf-9a52-92362b60807e
+# ╠═d0e6705c-7519-4a75-b207-a99dfa766693
+# ╠═e9de473b-84fb-4cfa-b680-e3bc67047a35
 # ╠═9ad9b9b0-c85d-4b1d-830a-2efbf077ad5d
 # ╠═e66920f0-113a-4c58-b5bd-e021f1791d7b
 # ╟─00000000-0000-0000-0000-000000000001
